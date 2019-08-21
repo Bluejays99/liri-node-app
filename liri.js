@@ -1,17 +1,34 @@
 require("dotenv").config();
-var keys = require("./keys.js");
-var spotify = new Spotify(keys.spotify);
+
+var moment = require("moment");
+var omdbkey = require("./keys.js").omdbkey;
+var keys = require("./keys.js").spotify;
 var Spotify = require('node-spotify-api');
+var spotify = new Spotify ({
+    id: keys.id,
+    secret: keys.secret
+});
+var fs = require('fs');
+var axios = require("axios");
 var command = process.argv[2]
 var search = process.argv[3]
 switch (command) {
     case "concert-this":
+        if (search === undefined || search === null) {
+            console.log("Sorry, please enter an artist or band name");
+            break;
+        }
         bandsInTown(search);
         break;
-    case "spotify-this-song":
+        
+    case "spotify-this":
         spotifyThis(search);
         break;
     case "movie-this":
+        movieThis(search);
+        if (search === undefined || search === null) {
+            search = "Mr. Nobody"
+        }
         movieThis(search);
         break;
     case "do-what-it-says":
@@ -20,8 +37,9 @@ switch (command) {
 }
 function bandsInTown(artist) {
     var queryURL = "https://rest.bandsintown.com/artists/" + artist + "/events?app_id=codingbootcamp";
-    axios.get(queryURL).then(
-        function (response) {
+    axios.get(queryURL)
+    
+    .then(function (response) {
             if (response.data[0].venue != undefined) {
                 console.log("----------------")
                 console.log("Event Venue: " + response.data[0].venue.name);
@@ -53,9 +71,7 @@ function movieThis(movie) {
                 console.log("RottenTomatoes: " + response.data.tomatoRating);
                 console.log("----------------");
             }
-            else {
-                movieThis("Mr. Nobody");
-            }
+
         }
     ).catch(function (error) {
         console.log(error);
